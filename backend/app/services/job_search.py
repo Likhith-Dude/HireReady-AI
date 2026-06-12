@@ -1,27 +1,24 @@
 import httpx
-from bs4 import BeautifulSoup
-from typing import List, Dict
-import urllib.parse
+from typing import List, Dict, Optional
 
 
-def search_jobs(title: str, location: str = "", limit: int = 20) -> List[Dict]:
-    """Scrape jobs from RemoteOK and HN Who's Hiring (fallback to mock for demo)."""
+def search_jobs(title: str, location: str = "", limit: int = 20,
+                job_type: str = "", salary_min: int = 0) -> List[Dict]:
     jobs = []
-
-    # Try RemoteOK API (free, no auth needed)
     try:
         jobs.extend(_fetch_remoteok(title, limit))
     except Exception:
         pass
-
-    # Try Arbeitnow free API
     try:
         jobs.extend(_fetch_arbeitnow(title, location, limit))
     except Exception:
         pass
-
     if not jobs:
         jobs = _mock_jobs(title, location)
+
+    # Filter by job type
+    if job_type:
+        jobs = [j for j in jobs if job_type.lower() in " ".join(j.get("tags", [])).lower()]
 
     return jobs[:limit]
 
@@ -32,11 +29,10 @@ def _fetch_remoteok(title: str, limit: int) -> List[Dict]:
     resp = httpx.get(url, headers=headers, timeout=10)
     resp.raise_for_status()
     data = resp.json()
-
     results = []
     keywords = title.lower().split()
-    for job in data[1:]:  # first item is metadata
-        job_text = f"{job.get('position','').lower()} {' '.join(job.get('tags', []))}".lower()
+    for job in data[1:]:
+        job_text = f"{job.get('position','').lower()} {' '.join(job.get('tags', []))}"
         if any(kw in job_text for kw in keywords):
             results.append({
                 "id": str(job.get("id", "")),
@@ -47,6 +43,8 @@ def _fetch_remoteok(title: str, limit: int) -> List[Dict]:
                 "description": job.get("description", "")[:500],
                 "posted": job.get("date", ""),
                 "tags": job.get("tags", []),
+                "salary": job.get("salary", ""),
+                "job_type": "Remote",
                 "source": "RemoteOK",
             })
             if len(results) >= limit:
@@ -56,11 +54,9 @@ def _fetch_remoteok(title: str, limit: int) -> List[Dict]:
 
 def _fetch_arbeitnow(title: str, location: str, limit: int) -> List[Dict]:
     params = {"q": title, "location": location or ""}
-    url = "https://www.arbeitnow.com/api/job-board-api"
-    resp = httpx.get(url, params=params, timeout=10)
+    resp = httpx.get("https://www.arbeitnow.com/api/job-board-api", params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
-
     results = []
     for job in data.get("data", []):
         results.append({
@@ -72,6 +68,8 @@ def _fetch_arbeitnow(title: str, location: str, limit: int) -> List[Dict]:
             "description": job.get("description", "")[:500],
             "posted": job.get("created_at", ""),
             "tags": job.get("tags", []),
+            "salary": "",
+            "job_type": "Full-time" if job.get("employment_type") == "FULL_TIME" else job.get("employment_type", ""),
             "source": "Arbeitnow",
         })
         if len(results) >= limit:
@@ -80,16 +78,23 @@ def _fetch_arbeitnow(title: str, location: str, limit: int) -> List[Dict]:
 
 
 def _mock_jobs(title: str, location: str) -> List[Dict]:
-    base = [
-        {"id": "1", "title": f"{title} - Senior", "company": "TechCorp Inc", "location": location or "Remote",
-         "url": "https://example.com/job/1", "description": f"We are looking for a {title} with 3+ years of experience in Python, AWS, Docker, and Kubernetes. You will design and maintain ML pipelines, optimize cloud infrastructure costs, and collaborate with cross-functional teams.", "posted": "2026-06-10", "tags": ["python", "aws", "docker"], "source": "Mock"},
+    return [
+        {"id": "1", "title": f"Senior {title}", "company": "TechCorp Inc", "location": location or "Remote",
+         "url": "https://example.com/job/1", "salary": "$140,000 - $180,000",
+         "description": f"Senior {title} role. Python, AWS, Docker, Kubernetes, MLflow, FastAPI required. M.S. CS preferred. Lead ML platform engineering.", "posted": "2026-06-10", "tags": ["python", "aws", "docker", "kubernetes"], "job_type": "Full-time", "source": "Mock"},
         {"id": "2", "title": f"{title} II", "company": "CloudSystems LLC", "location": location or "New York, NY",
-         "url": "https://example.com/job/2", "description": f"Exciting {title} role at a fast-growing startup. Skills needed: Python, MLflow, FastAPI, PostgreSQL, Kubernetes. Build scalable AI/ML systems and lead cost optimization initiatives.", "posted": "2026-06-09", "tags": ["mlops", "kubernetes", "mlflow"], "source": "Mock"},
+         "url": "https://example.com/job/2", "salary": "$120,000 - $150,000",
+         "description": f"{title} II at a fast-growing startup. Python, MLflow, FastAPI, PostgreSQL, Kubernetes. Build scalable AI/ML systems.", "posted": "2026-06-09", "tags": ["mlops", "kubernetes", "mlflow", "python"], "job_type": "Full-time", "source": "Mock"},
         {"id": "3", "title": f"Staff {title}", "company": "AI Innovations", "location": location or "San Francisco, CA",
-         "url": "https://example.com/job/3", "description": f"Staff-level {title} to lead our platform team. Experience with MLOps, cloud architecture (AWS/GCP), Docker, Kubernetes, and building fraud detection systems a plus.", "posted": "2026-06-08", "tags": ["aws", "gcp", "ml"], "source": "Mock"},
-        {"id": "4", "title": f"{title} Specialist", "company": "DataDriven Co", "location": location or "Austin, TX",
-         "url": "https://example.com/job/4", "description": f"Join our team as a {title} Specialist. You'll work with FastAPI, PostgreSQL, Docker, and MLflow to build and maintain production ML systems at scale.", "posted": "2026-06-07", "tags": ["fastapi", "postgresql", "docker"], "source": "Mock"},
-        {"id": "5", "title": f"Lead {title}", "company": "FutureStack", "location": location or "Remote",
-         "url": "https://example.com/job/5", "description": f"Lead {title} position. We need someone with deep expertise in cloud cost optimization, AWS, Kubernetes, and MLOps pipelines. M.S. in CS preferred.", "posted": "2026-06-06", "tags": ["cloud", "aws", "mlops"], "source": "Mock"},
+         "url": "https://example.com/job/3", "salary": "$180,000 - $220,000",
+         "description": f"Staff {title} to lead platform team. MLOps, cloud architecture (AWS/GCP), Docker, Kubernetes, fraud detection experience a plus.", "posted": "2026-06-08", "tags": ["aws", "gcp", "ml", "staff"], "job_type": "Full-time", "source": "Mock"},
+        {"id": "4", "title": f"{title} - Remote", "company": "DataDriven Co", "location": "Remote",
+         "url": "https://example.com/job/4", "salary": "$110,000 - $140,000",
+         "description": f"Remote {title}. FastAPI, PostgreSQL, Docker, MLflow to build and maintain production ML systems at scale.", "posted": "2026-06-07", "tags": ["fastapi", "postgresql", "docker", "remote"], "job_type": "Remote", "source": "Mock"},
+        {"id": "5", "title": f"Lead {title}", "company": "FutureStack", "location": location or "Austin, TX",
+         "url": "https://example.com/job/5", "salary": "$160,000 - $200,000",
+         "description": f"Lead {title}. Cloud cost optimization, AWS, Kubernetes, MLOps pipelines. M.S. in CS preferred.", "posted": "2026-06-06", "tags": ["cloud", "aws", "mlops", "lead"], "job_type": "Full-time", "source": "Mock"},
+        {"id": "6", "title": f"{title} Contractor", "company": "ConsultCo", "location": "Remote",
+         "url": "https://example.com/job/6", "salary": "$80 - $120/hr",
+         "description": f"Contract {title} for 6-month engagement. Python, AWS, Docker required.", "posted": "2026-06-05", "tags": ["python", "aws", "contract"], "job_type": "Contract", "source": "Mock"},
     ]
-    return base

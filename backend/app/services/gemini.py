@@ -1,84 +1,81 @@
-import google.generativeai as genai
-import json
-import re
-from app.config import settings
-
-genai.configure(api_key=settings.gemini_api_key)
-model = genai.GenerativeModel("gemini-1.5-flash")
+"""AI feature prompts — uses ai_router for provider-agnostic execution."""
+from app.services.ai_router import chat, stream as ai_stream, parse_json
 
 
-def _parse_json(text: str) -> dict:
-    text = re.sub(r"```(?:json)?", "", text).strip().rstrip("```").strip()
-    return json.loads(text)
+# Prompt templates
+PROMPTS = {
+    "ats_check": """You are an ATS expert. Analyze this resume against the job description.
+
+RESUME:
+{resume}
+
+JOB DESCRIPTION:
+{jd}
+
+Return ONLY valid JSON:
+{{"score":<0-100>,"matched_keywords":["..."],"missing_keywords":["..."],"suggestions":["..."],"summary":"2-3 sentences"}}""",
+
+    "one_click_apply": """You are an expert career coach. Tailor the resume and write a cover letter.
+
+RESUME: {resume}
+JOB: {title} at {company}
+DESCRIPTION: {jd}
+
+Return ONLY valid JSON:
+{{"tailored_resume":"<full tailored resume>","cover_letter":"<3-4 paragraph cover letter>"}}""",
+
+    "interview_prep": """You are an expert technical interviewer. Generate 10 interview questions with STAR answers.
+
+JOB: {title} at {company}
+DESCRIPTION: {jd}
+CANDIDATE: {resume}
+
+Return ONLY valid JSON:
+{{"questions":[{{"question":"...","answer":"...","category":"Behavioral|Technical|Situational|Culture Fit"}}]}}
+
+Exactly: 3 Behavioral, 4 Technical, 2 Situational, 1 Culture Fit.""",
+
+    "salary_insights": """You are a compensation expert. Provide salary insights.
+
+ROLE: {title} | LOCATION: {location} | SKILLS: {skills}
+
+Return ONLY valid JSON:
+{{"min_salary":<int>,"median_salary":<int>,"max_salary":<int>,"currency":"USD","factors":["..."],"market_trend":"Hot|Growing|Stable|Declining","top_paying_companies":["..."],"negotiation_tips":["..."],"summary":"..."}}""",
+
+    "job_match": """Rate how well this candidate matches this job (0-100).
+
+RESUME: {resume}
+JOB: {title} — {jd}
+
+Return ONLY valid JSON:
+{{"match_score":<int>,"strengths":["..."],"gaps":["..."],"recommendation":"Apply Now|Strong Match|Good Match|Stretch Role"}}""",
+}
 
 
 def ats_check(resume_text: str, job_description: str) -> dict:
-    prompt = f"""
-You are an ATS (Applicant Tracking System) expert. Analyze this resume against the job description.
-
-RESUME:
-{resume_text}
-
-JOB DESCRIPTION:
-{job_description}
-
-Respond with ONLY valid JSON (no markdown):
-{{
-  "score": <integer 0-100>,
-  "matched_keywords": ["keyword1", ...],
-  "missing_keywords": ["keyword1", ...],
-  "suggestions": ["suggestion1", ...],
-  "summary": "<2-3 sentence summary>"
-}}
-"""
-    response = model.generate_content(prompt)
-    return _parse_json(response.text)
+    prompt = PROMPTS["ats_check"].format(resume=resume_text, jd=job_description)
+    return parse_json(chat(prompt))
 
 
 def one_click_apply(resume_text: str, job_title: str, company: str, job_description: str) -> dict:
-    prompt = f"""
-You are an expert career coach. Tailor the resume and write a cover letter for this job.
-
-CANDIDATE RESUME:
-{resume_text}
-
-TARGET JOB: {job_title} at {company}
-JOB DESCRIPTION:
-{job_description}
-
-Respond with ONLY valid JSON (no markdown):
-{{
-  "tailored_resume": "<full tailored resume text with relevant skills and experiences highlighted>",
-  "cover_letter": "<professional cover letter, 3-4 paragraphs>"
-}}
-"""
-    response = model.generate_content(prompt)
-    return _parse_json(response.text)
+    prompt = PROMPTS["one_click_apply"].format(resume=resume_text, title=job_title, company=company, jd=job_description)
+    return parse_json(chat(prompt, use_cache=False))  # always fresh
 
 
 def interview_prep(job_title: str, company: str, job_description: str, resume_text: str = "") -> dict:
-    prompt = f"""
-You are an expert interviewer. Generate the top 10 interview questions with strong sample answers for this role.
+    prompt = PROMPTS["interview_prep"].format(title=job_title, company=company, jd=job_description, resume=resume_text or "Not provided")
+    return parse_json(chat(prompt))
 
-JOB: {job_title} at {company}
-JOB DESCRIPTION:
-{job_description}
 
-CANDIDATE BACKGROUND:
-{resume_text or "Not provided"}
+def salary_insights(job_title: str, location: str, skills: list) -> dict:
+    prompt = PROMPTS["salary_insights"].format(title=job_title, location=location or "United States", skills=", ".join(skills) or "Not specified")
+    return parse_json(chat(prompt))
 
-Respond with ONLY valid JSON (no markdown):
-{{
-  "questions": [
-    {{
-      "question": "<interview question>",
-      "answer": "<strong sample answer using STAR method where applicable>",
-      "category": "<Behavioral|Technical|Situational|Culture Fit>"
-    }}
-  ]
-}}
 
-Generate exactly 10 questions covering: 3 behavioral, 4 technical, 2 situational, 1 culture fit.
-"""
-    response = model.generate_content(prompt)
-    return _parse_json(response.text)
+def job_match_score(resume_text: str, job_title: str, job_description: str) -> dict:
+    prompt = PROMPTS["job_match"].format(resume=resume_text, title=job_title, jd=job_description)
+    return parse_json(chat(prompt))
+
+
+def _stream(prompt: str):
+    return ai_stream(prompt)
