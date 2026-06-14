@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Zap, BarChart2, MessageSquare, ClipboardList, Briefcase, Moon, Sun, DollarSign, LogOut, User } from "lucide-react";
+import { Search, Zap, BarChart2, MessageSquare, ClipboardList, Briefcase, Moon, Sun, DollarSign, LogOut, User, Sparkles } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { getUser, clearAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ const nav = [
   { href: "/interview", label: "Interview Prep", icon: MessageSquare },
   { href: "/salary", label: "Salary Insights", icon: DollarSign },
   { href: "/tracker", label: "App Tracker", icon: ClipboardList },
+  { href: "/portfolio", label: "My Portfolio", icon: Sparkles },
 ];
 
 export default function Sidebar() {

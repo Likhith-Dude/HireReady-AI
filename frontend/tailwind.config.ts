@@ -20,6 +20,16 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }: { addUtilities: (u: Record<string, Record<string, string>>) => void }) {
+      addUtilities({
+        '.perspective-1000': { perspective: '1000px' },
+        '.backface-hidden': { 'backface-visibility': 'hidden' },
+        '.preserve-3d': { 'transform-style': 'preserve-3d' },
+        '.bg-white\\/2': { 'background-color': 'rgba(255,255,255,0.02)' },
+        '.bg-white\\/3': { 'background-color': 'rgba(255,255,255,0.03)' },
+      });
+    },
+  ],
 };
 export default config;
