@@ -9,7 +9,7 @@ class Application(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     job_title = Column(String(255), nullable=False)
-    company = Column(String(255), nullable=False, index=True)
+    company = Column(String(255), nullable=False)
     location = Column(String(255))
     job_url = Column(Text)
     status = Column(String(50), default="Applied", index=True)

@@ -11,7 +11,11 @@ import app.models
 configure_logging()
 init_sentry()
 
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as _e:
+    import logging as _log
+    _log.getLogger(__name__).warning(f"DB schema init (non-fatal): {_e}")
 
 app = FastAPI(
     title="HireReady AI",
