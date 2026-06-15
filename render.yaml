@@ -3,7 +3,7 @@ services:
     name: hireready-api
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     plan: free
     envVars:
@@ -12,6 +12,8 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://hireready-ai.vercel.app,http://localhost:3000
+        value: https://hire-ready-ai-ten.vercel.app,http://localhost:3000
       - key: GROQ_API_KEY
-        sync: false   # set manually in Render dashboard
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11.0"
