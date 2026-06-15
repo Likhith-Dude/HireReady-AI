@@ -90,7 +90,7 @@ export default function SalaryPage() {
                   <BarChart data={chartData} barSize={48}>
                     <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--muted)" }} axisLine={false} tickLine={false} />
                     <YAxis tickFormatter={fmt} tick={{ fontSize: 11, fill: "var(--muted)" }} axisLine={false} tickLine={false} />
-                    <Tooltip formatter={(v: number) => ["$" + v.toLocaleString(), "Salary"]} contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                    <Tooltip formatter={(v) => ["$" + Number(v).toLocaleString(), "Salary"]} contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                       {chartData.map((d, i) => <Cell key={i} fill={d.fill} />)}
                     </Bar>
