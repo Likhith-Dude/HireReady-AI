@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Github, ExternalLink, TrendingUp, Cpu, Briefcase } from 'lucide-react';
+import { Github, ExternalLink, TrendingUp, Cpu, Briefcase, Shield } from 'lucide-react';
 
 const PROJECTS = [
   {
@@ -58,6 +58,25 @@ const PROJECTS = [
     github: 'https://github.com/Likhith-Dude/HireReady-AI',
     category: 'Full-Stack AI',
   },
+  {
+    id: 4,
+    icon: Shield,
+    name: 'Blockchain Event Spotting',
+    tagline: 'ML cybersecurity with blockchain trust verification',
+    description: 'ML-powered cybersecurity threat detection on 257,673 real UNSW-NB15 records with blockchain-based event verification and hybrid ECC+AES encryption.',
+    tech: ['Python', 'Blockchain', 'ECC+AES', 'Random Forest', 'NLP', 'Scikit-learn'],
+    color: 'from-emerald-600 to-teal-700',
+    glow: 'shadow-[0_0_60px_rgba(16,185,129,0.4)]',
+    badge: 'PUBLISHED · ICCCAI-2024',
+    metrics: [
+      { label: 'Random Forest', value: '98.36%', color: 'text-green-400' },
+      { label: 'Gradient Boosting', value: '96.55%', color: 'text-emerald-400' },
+      { label: 'Decision Tree', value: '89.42%', color: 'text-teal-400' },
+      { label: 'Published', value: 'ICCCAI-2024', color: 'text-yellow-400' },
+    ],
+    github: 'https://github.com/Likhith-Dude/Blockchain-Event-Spotting',
+    category: 'Security / Research',
+  },
 ];
 
 function ProjectCard({ project, delay }: { project: typeof PROJECTS[0]; delay: number }) {
@@ -91,9 +110,16 @@ function ProjectCard({ project, delay }: { project: typeof PROJECTS[0]; delay: n
               <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
                 <Icon size={28} className="text-white" />
               </div>
-              <span className="text-xs font-semibold text-white/60 uppercase tracking-widest px-3 py-1 rounded-full border border-white/20">
-                {project.category}
-              </span>
+              <div className="flex flex-col items-end gap-1.5">
+                <span className="text-xs font-semibold text-white/60 uppercase tracking-widest px-3 py-1 rounded-full border border-white/20">
+                  {project.category}
+                </span>
+                {'badge' in project && project.badge && (
+                  <span className="text-xs font-bold text-yellow-300 uppercase tracking-widest px-3 py-1 rounded-full bg-yellow-400/15 border border-yellow-400/30">
+                    {project.badge as string}
+                  </span>
+                )}
+              </div>
             </div>
             <h3 className="text-2xl font-black text-white mb-3">{project.name}</h3>
             <p className="text-white/60 text-sm leading-relaxed mb-6">{project.tagline}</p>
@@ -180,7 +206,7 @@ export default function ProjectsSection() {
           <p className="text-gray-500 mt-4">Hover the cards to reveal live metrics</p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
           {PROJECTS.map((p, i) => (
             <ProjectCard key={p.id} project={p} delay={i * 0.15} />
           ))}

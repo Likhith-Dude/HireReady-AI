@@ -12,9 +12,9 @@ const SKILLS = [
 ];
 
 const STATS = [
-  { value: '3', label: 'Projects Built', suffix: '' },
+  { value: '4', label: 'Projects Built', suffix: '' },
   { value: '3.867', label: 'GPA', suffix: '' },
-  { value: '56', label: 'Files Shipped', suffix: '+' },
+  { value: '1', label: 'Research Published', suffix: '' },
   { value: '10', label: 'Systems Built', suffix: '' },
 ];
 
