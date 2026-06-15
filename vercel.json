@@ -3,6 +3,6 @@
   "outputDirectory": "frontend/.next",
   "installCommand": "echo 'install handled in buildCommand'",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://hireready-api.onrender.com"
+    "NEXT_PUBLIC_API_URL": "https://hireready-api-cifu.onrender.com"
   }
 }
