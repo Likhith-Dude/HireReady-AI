@@ -12,7 +12,8 @@ const PROJECTS = [
     description: 'End-to-end MLOps pipeline with feature engineering, ensemble modeling, and real-time inference API. Achieved state-of-the-art fraud detection accuracy.',
     tech: ['Python', 'Scikit-Learn', 'XGBoost', 'FastAPI', 'Docker', 'MLflow', 'AWS'],
     color: 'from-indigo-600 to-purple-700',
-    glow: 'shadow-[0_0_60px_rgba(99,102,241,0.4)]',
+    glowColor: 'rgba(99,102,241,0.5)',
+    badge: null,
     metrics: [
       { label: 'F1 Score', value: '98.49%', color: 'text-green-400' },
       { label: 'Precision', value: '97.8%', color: 'text-indigo-400' },
@@ -20,7 +21,7 @@ const PROJECTS = [
       { label: 'AUC-ROC', value: '0.997', color: 'text-cyan-400' },
     ],
     github: 'https://github.com/Likhith-Dude',
-    category: 'AI/ML',
+    category: 'AI / ML',
   },
   {
     id: 2,
@@ -30,7 +31,8 @@ const PROJECTS = [
     description: 'Intelligent AWS cost analysis engine using machine learning to predict, detect anomalies, and recommend optimizations across all cloud resources.',
     tech: ['Python', 'AWS', 'Scikit-Learn', 'Pandas', 'Boto3', 'PostgreSQL', 'Grafana'],
     color: 'from-cyan-600 to-blue-700',
-    glow: 'shadow-[0_0_60px_rgba(6,182,212,0.4)]',
+    glowColor: 'rgba(6,182,212,0.5)',
+    badge: null,
     metrics: [
       { label: 'F1 Score', value: '100%', color: 'text-green-400' },
       { label: 'Cost Saved', value: '35%', color: 'text-cyan-400' },
@@ -48,7 +50,8 @@ const PROJECTS = [
     description: 'Production-grade AI-powered job hunting platform with 7-source job aggregation, resume parsing, ATS checking, interview prep, and real-time WebSockets.',
     tech: ['Next.js', 'FastAPI', 'Groq AI', 'SQLite', 'Three.js', 'WebSockets', 'Docker'],
     color: 'from-purple-600 to-pink-600',
-    glow: 'shadow-[0_0_60px_rgba(139,92,246,0.4)]',
+    glowColor: 'rgba(139,92,246,0.5)',
+    badge: null,
     metrics: [
       { label: 'Files Shipped', value: '56', color: 'text-purple-400' },
       { label: 'API Endpoints', value: '30+', color: 'text-pink-400' },
@@ -66,11 +69,11 @@ const PROJECTS = [
     description: 'ML-powered cybersecurity threat detection on 257,673 real UNSW-NB15 records with blockchain-based event verification and hybrid ECC+AES encryption.',
     tech: ['Python', 'Blockchain', 'ECC+AES', 'Random Forest', 'NLP', 'Scikit-learn'],
     color: 'from-emerald-600 to-teal-700',
-    glow: 'shadow-[0_0_60px_rgba(16,185,129,0.4)]',
+    glowColor: 'rgba(16,185,129,0.5)',
     badge: 'PUBLISHED · ICCCAI-2024',
     metrics: [
       { label: 'Random Forest', value: '98.36%', color: 'text-green-400' },
-      { label: 'Gradient Boosting', value: '96.55%', color: 'text-emerald-400' },
+      { label: 'Grad. Boosting', value: '96.55%', color: 'text-emerald-400' },
       { label: 'Decision Tree', value: '89.42%', color: 'text-teal-400' },
       { label: 'Published', value: 'ICCCAI-2024', color: 'text-yellow-400' },
     ],
@@ -89,7 +92,9 @@ function ProjectCard({ project, delay }: { project: typeof PROJECTS[0]; delay: n
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay, duration: 0.6 }}
-      className="perspective-1000 h-[420px] cursor-pointer"
+      /* Fixed height — every card is exactly 460px */
+      className="cursor-pointer h-[460px]"
+      style={{ perspective: '1000px' }}
       onClick={() => setFlipped(f => !f)}
       onMouseEnter={() => setFlipped(true)}
       onMouseLeave={() => setFlipped(false)}
@@ -100,83 +105,114 @@ function ProjectCard({ project, delay }: { project: typeof PROJECTS[0]; delay: n
         className="relative w-full h-full"
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* Front */}
+        {/* ── FRONT ─────────────────────────────────────────────── */}
         <div
-          className={`absolute inset-0 rounded-3xl border border-white/10 bg-gradient-to-br ${project.color} p-8 flex flex-col justify-between backface-hidden hover:${project.glow} transition-shadow duration-500`}
-          style={{ backfaceVisibility: 'hidden' }}
+          className={`absolute inset-0 rounded-3xl border border-white/10 bg-gradient-to-br ${project.color} p-6 flex flex-col transition-shadow duration-500`}
+          style={{
+            backfaceVisibility: 'hidden',
+            boxShadow: flipped ? 'none' : undefined,
+          }}
         >
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
-                <Icon size={28} className="text-white" />
-              </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <span className="text-xs font-semibold text-white/60 uppercase tracking-widest px-3 py-1 rounded-full border border-white/20">
-                  {project.category}
-                </span>
-                {'badge' in project && project.badge && (
-                  <span className="text-xs font-bold text-yellow-300 uppercase tracking-widest px-3 py-1 rounded-full bg-yellow-400/15 border border-yellow-400/30">
-                    {project.badge as string}
-                  </span>
-                )}
-              </div>
+          {/* Row 1 — icon + category (fixed height) */}
+          <div className="flex items-start justify-between mb-5 flex-shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center flex-shrink-0">
+              <Icon size={24} className="text-white" />
             </div>
-            <h3 className="text-2xl font-black text-white mb-3">{project.name}</h3>
-            <p className="text-white/60 text-sm leading-relaxed mb-6">{project.tagline}</p>
-            <p className="text-white/50 text-sm leading-relaxed">{project.description}</p>
+            <div className="flex flex-col items-end gap-1.5 ml-2 min-w-0">
+              <span className="text-[10px] font-semibold text-white/60 uppercase tracking-widest px-2.5 py-1 rounded-full border border-white/20 whitespace-nowrap">
+                {project.category}
+              </span>
+              {project.badge && (
+                <span className="text-[10px] font-bold text-yellow-300 uppercase tracking-widest px-2.5 py-1 rounded-full bg-yellow-400/15 border border-yellow-400/30 whitespace-nowrap">
+                  {project.badge}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2 mt-4">
+
+          {/* Row 2 — title (fixed, 2 lines max) */}
+          <h3 className="text-xl font-black text-white leading-tight mb-2 flex-shrink-0 line-clamp-2">
+            {project.name}
+          </h3>
+
+          {/* Row 3 — tagline (1 line) */}
+          <p className="text-white/60 text-xs font-medium mb-3 flex-shrink-0 line-clamp-1">
+            {project.tagline}
+          </p>
+
+          {/* Row 4 — description (grows, clamped to 4 lines) */}
+          <p className="text-white/45 text-xs leading-relaxed flex-1 line-clamp-4 overflow-hidden">
+            {project.description}
+          </p>
+
+          {/* Row 5 — tech badges (pinned to bottom, fixed height) */}
+          <div className="flex flex-wrap gap-1.5 mt-4 flex-shrink-0 min-h-[52px] content-start">
             {project.tech.slice(0, 4).map(t => (
-              <span key={t} className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/70">{t}</span>
+              <span key={t} className="text-[10px] px-2 py-1 rounded-full bg-white/10 text-white/70 h-6 flex items-center">
+                {t}
+              </span>
             ))}
             {project.tech.length > 4 && (
-              <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/70">+{project.tech.length - 4}</span>
+              <span className="text-[10px] px-2 py-1 rounded-full bg-white/10 text-white/70 h-6 flex items-center">
+                +{project.tech.length - 4}
+              </span>
             )}
           </div>
-          <p className="text-white/30 text-xs mt-4 text-center">Hover to see metrics →</p>
+
+          {/* Row 6 — hint (always at bottom, fixed) */}
+          <p className="text-white/25 text-[10px] text-center mt-3 flex-shrink-0 tracking-widest uppercase">
+            Hover to see metrics →
+          </p>
         </div>
 
-        {/* Back */}
+        {/* ── BACK ──────────────────────────────────────────────── */}
         <div
-          className="absolute inset-0 rounded-3xl border border-white/10 bg-[#0d0d1a] p-8 flex flex-col justify-between"
+          className="absolute inset-0 rounded-3xl border border-white/10 bg-[#0d0d1a] p-6 flex flex-col"
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
-          <div>
-            <h3 className="text-xl font-black text-white mb-2">{project.name}</h3>
-            <p className="text-gray-500 text-xs mb-8">Live Metrics</p>
-            <div className="grid grid-cols-2 gap-4">
-              {project.metrics.map(m => (
-                <div key={m.label} className="p-4 rounded-2xl bg-white/3 border border-white/5 text-center">
-                  <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
-                  <div className="text-gray-500 text-xs mt-1">{m.label}</div>
-                </div>
-              ))}
-            </div>
+          {/* Title */}
+          <div className="flex-shrink-0 mb-1">
+            <h3 className="text-lg font-black text-white leading-tight line-clamp-2">{project.name}</h3>
+            <p className="text-gray-500 text-[10px] uppercase tracking-widest mt-1">Live Metrics</p>
           </div>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap gap-2 mb-2">
-              {project.tech.map(t => (
-                <span key={t} className="text-xs px-2 py-1 rounded-full border border-indigo-500/30 text-indigo-400">{t}</span>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noreferrer"
-                onClick={e => e.stopPropagation()}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 text-white text-sm hover:bg-white/5 transition-colors"
-              >
-                <Github size={16} /> GitHub
-              </a>
-              <a
-                href="#"
-                onClick={e => e.stopPropagation()}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm hover:opacity-90 transition-opacity"
-              >
-                <ExternalLink size={16} /> Demo
-              </a>
-            </div>
+
+          {/* Metrics grid — takes up all middle space */}
+          <div className="grid grid-cols-2 gap-3 my-4 flex-1">
+            {project.metrics.map(m => (
+              <div key={m.label} className="rounded-2xl bg-white/3 border border-white/5 flex flex-col items-center justify-center p-3">
+                <div className={`text-xl font-black ${m.color} leading-none`}>{m.value}</div>
+                <div className="text-gray-500 text-[10px] mt-1.5 text-center leading-tight">{m.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tech tags — fixed height */}
+          <div className="flex flex-wrap gap-1.5 flex-shrink-0 min-h-[44px] content-start mb-3">
+            {project.tech.map(t => (
+              <span key={t} className="text-[10px] px-2 py-1 rounded-full border border-indigo-500/30 text-indigo-400 h-6 flex items-center">
+                {t}
+              </span>
+            ))}
+          </div>
+
+          {/* Buttons — always at bottom */}
+          <div className="flex gap-2 flex-shrink-0">
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-white/10 text-white text-xs hover:bg-white/5 transition-colors"
+            >
+              <Github size={14} /> GitHub
+            </a>
+            <a
+              href="#"
+              onClick={e => e.stopPropagation()}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs hover:opacity-90 transition-opacity"
+            >
+              <ExternalLink size={14} /> Demo
+            </a>
           </div>
         </div>
       </motion.div>
@@ -206,9 +242,10 @@ export default function ProjectsSection() {
           <p className="text-gray-500 mt-4">Hover the cards to reveal live metrics</p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
+        {/* 1 col mobile → 2 col tablet → 4 col desktop, equal rows via fixed card height */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {PROJECTS.map((p, i) => (
-            <ProjectCard key={p.id} project={p} delay={i * 0.15} />
+            <ProjectCard key={p.id} project={p} delay={i * 0.12} />
           ))}
         </div>
       </div>
