@@ -1,7 +1,6 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/.next",
-  "installCommand": "echo 'install handled in buildCommand'",
+  "framework": "nextjs",
+  "rootDirectory": "frontend",
   "env": {
     "NEXT_PUBLIC_API_URL": "https://hireready-api-cifu.onrender.com"
   }
