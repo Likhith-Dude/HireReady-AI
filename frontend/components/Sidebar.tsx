@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Zap, BarChart2, MessageSquare, ClipboardList, Briefcase, Moon, Sun, DollarSign, LogOut, User, Sparkles } from "lucide-react";
+import { Search, Zap, BarChart2, MessageSquare, ClipboardList, Briefcase, Moon, Sun, DollarSign, LogOut, User, Sparkles, FileText, Scale, Linkedin, Brain } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { getUser, clearAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
@@ -10,8 +10,12 @@ const nav = [
   { href: "/", label: "Job Search", icon: Search },
   { href: "/apply", label: "One Click Apply", icon: Zap },
   { href: "/ats", label: "ATS Checker", icon: BarChart2 },
+  { href: "/cover-letter", label: "Cover Letter", icon: FileText },
+  { href: "/mock-interview", label: "Mock Interview", icon: Brain },
   { href: "/interview", label: "Interview Prep", icon: MessageSquare },
+  { href: "/linkedin", label: "LinkedIn Optimizer", icon: Linkedin },
   { href: "/salary", label: "Salary Insights", icon: DollarSign },
+  { href: "/compare", label: "Offer Comparison", icon: Scale },
   { href: "/tracker", label: "App Tracker", icon: ClipboardList },
   { href: "/portfolio", label: "My Portfolio", icon: Sparkles },
 ];

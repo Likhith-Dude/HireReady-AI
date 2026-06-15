@@ -82,3 +82,82 @@ def job_match(req: JobMatchRequest):
         return gemini.job_match_score(req.resume_text, req.job_title, req.job_description)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class CoverLetterRequest(BaseModel):
+    resume_text: str
+    job_title: str
+    company: str
+    job_description: str
+    tone: Optional[str] = "professional"
+
+
+@router.post("/cover-letter")
+def cover_letter(req: CoverLetterRequest):
+    try:
+        return gemini.cover_letter(req.resume_text, req.job_title, req.company, req.job_description, req.tone or "professional")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/cover-letter/stream")
+def cover_letter_stream(req: CoverLetterRequest):
+    prompt = f"""Write a compelling cover letter for {req.job_title} at {req.company}.
+
+RESUME: {req.resume_text}
+JOB DESCRIPTION: {req.job_description}
+TONE: {req.tone or 'professional'}
+
+Write a 3-4 paragraph cover letter. Be specific, confident, and human. No placeholders."""
+
+    def generate():
+        for chunk in gemini._stream(prompt):
+            yield f"data: {json.dumps({'text': chunk})}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+class LinkedInRequest(BaseModel):
+    profile: str
+    target_role: str
+    industry: Optional[str] = "Technology"
+
+
+@router.post("/linkedin-optimize")
+def linkedin_optimize(req: LinkedInRequest):
+    try:
+        return gemini.linkedin_optimize(req.profile, req.target_role, req.industry or "Technology")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class MockInterviewQuestionRequest(BaseModel):
+    job_title: str
+    company: str
+    category: str
+    resume_text: Optional[str] = ""
+    asked: Optional[List[str]] = []
+
+
+@router.post("/mock-interview/question")
+def mock_question(req: MockInterviewQuestionRequest):
+    try:
+        return gemini.mock_interview_question(req.job_title, req.company, req.category, req.resume_text or "", req.asked or [])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class MockInterviewFeedbackRequest(BaseModel):
+    question: str
+    answer: str
+    job_title: str
+
+
+@router.post("/mock-interview/feedback")
+def mock_feedback(req: MockInterviewFeedbackRequest):
+    try:
+        return gemini.mock_interview_feedback(req.question, req.answer, req.job_title)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

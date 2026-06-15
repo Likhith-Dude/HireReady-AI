@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import GitHubStats from './GitHubStats';
 
 const SKILLS = [
   { name: 'Python / FastAPI', pct: 95, color: 'from-indigo-500 to-purple-500' },
@@ -145,6 +146,7 @@ export default function AboutSection() {
                 🌍 From India · Based in Florida, USA
               </p>
             </div>
+            <GitHubStats />
           </motion.div>
         </div>
       </div>
