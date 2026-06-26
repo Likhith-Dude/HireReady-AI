@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppShell from "@/components/AppShell";
 import { jobsApi, applicationsApi, aiApi, DEFAULT_RESUME } from "@/lib/api";
-import { Search, MapPin, Building2, ExternalLink, Plus, Loader2, DollarSign, Filter, Zap } from "lucide-react";
+import { Search, MapPin, Building2, ExternalLink, Plus, Loader2, DollarSign, Filter, Zap, AlertCircle } from "lucide-react";
 
 interface Job {
   id: string; title: string; company: string; location: string;
@@ -19,15 +19,30 @@ export default function JobSearchPage() {
   const [jobType, setJobType] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [slowNotice, setSlowNotice] = useState(false);
   const [matchingId, setMatchingId] = useState<string | null>(null);
   const [trackingId, setTrackingId] = useState<string | null>(null);
 
+  useEffect(() => { search(); }, []);
+
   async function search() {
     setLoading(true);
+    setError(null);
+    setSlowNotice(false);
+    const slowTimer = setTimeout(() => setSlowNotice(true), 6000);
     try {
       const res = await jobsApi.search(title, location, 20, jobType);
-      setJobs(res.data.jobs);
+      setJobs(res.data.jobs || []);
+    } catch (e: any) {
+      setError(
+        e?.code === "ECONNABORTED"
+          ? "The server is waking up (free tier sleeps when idle). Please try again in a few seconds."
+          : e?.response?.data?.detail || e?.message || "Could not load jobs. Please try again."
+      );
     } finally {
+      clearTimeout(slowTimer);
+      setSlowNotice(false);
       setLoading(false);
     }
   }
@@ -101,7 +116,27 @@ export default function JobSearchPage() {
           </div>
         )}
 
-        {loading && <div className="flex items-center justify-center py-16"><Loader2 className="w-7 h-7 animate-spin text-indigo-500" /><span className="ml-3 text-sm" style={{ color: "var(--muted)" }}>Searching jobs...</span></div>}
+        {error && !loading && (
+          <div className="card p-4 mb-4 flex items-start gap-3 border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20">
+            <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-red-700 dark:text-red-300">{error}</p>
+              <button onClick={search} className="text-xs text-red-600 dark:text-red-400 underline mt-1">Retry</button>
+            </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Loader2 className="w-7 h-7 animate-spin text-indigo-500" />
+            <span className="mt-3 text-sm" style={{ color: "var(--muted)" }}>Searching jobs...</span>
+            {slowNotice && (
+              <span className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
+                Still working — the backend may be waking up from sleep (free tier), this can take up to 50s on first load.
+              </span>
+            )}
+          </div>
+        )}
 
         {jobs.length > 0 && (
           <div>
